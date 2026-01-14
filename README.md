@@ -1,4 +1,4 @@
-# 🎨 ArtAuthentix
+# ArtAuthentix
 
 ArtAuthentix is a full-stack web application that analyzes uploaded artworks using machine learning to determine whether an image is a painting and, if so, predict its most likely art periods with confidence scores.
 The platform combines **authentication**, **media handling**, **ML inference**, and **social interaction features** into a cohesive system.

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head') %>
+    <title>Analysis Results</title>
+  </head>
+
+  <body>
+    <%- include('./partials/nav') %>
+
+    <div class="container mt-4">
+
+      <h3 class="mb-4">Painting Analysis Results</h3>
+
+      <!-- Uploaded Painting -->
+      <div class="mb-4 text-center">
+        <img
+          src="/uploads/<%= painting.imagePath %>"
+          class="img-fluid rounded shadow"
+          style="max-height: 420px;"
+          alt="Uploaded painting"
+        />
+      </div>
+
+      <!-- Predictions -->
+      <div class="card p-4">
+        <h5 class="mb-3">Predicted Art Periods</h5>
+
+        <% predictions.forEach(pred => { %>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <strong><%= pred.era.replace('_', ' ') %></strong>
+              <span><%= (pred.confidence * 100).toFixed(2) %>%</span>
+            </div>
+
+            <div class="progress mt-1" style="height: 10px;">
+              <div
+                class="progress-bar bg-success"
+                role="progressbar"
+                style="width: <%= pred.confidence * 100 %>%"
+                aria-valuenow="<%= pred.confidence * 100 %>"
+                aria-valuemin="0"
+                aria-valuemax="100">
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Back button -->
+      <div class="mt-4">
+        <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+      </div>
+
+    </div>
+
+    <%- include('./partials/scripts') %>
+  </body>
+</html>

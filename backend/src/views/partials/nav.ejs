@@ -18,6 +18,9 @@
             <%= locals.user.fullName %>
           </a>
           <ul class="dropdown-menu">
+            <a class="dropdown-item" href="/user/<%= locals.user._id %>/profile">
+                    Profile
+            </a>
             <form action="/user/logout" method="POST" style="margin: 0;">
                 <button type="submit" class="dropdown-item">Log Out</button>
             </form>

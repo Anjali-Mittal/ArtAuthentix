@@ -2,6 +2,7 @@ const {Router} = require('express');
 const {authLimiter} = require('../middleware/rateLimit');
 const router = Router();
 const User = require('../models/user');
+const Image = require("../models/image");
 
 router.get('/signup',(req,res)=>{
     return res.render('signUp', {error: null})
@@ -59,6 +60,32 @@ router.post("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect('/');
   });
+});
+
+router.get("/:id/profile", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).render("404");
+    }
+
+    const images = await Image.find({ userId: user._id })
+      .sort({ createdAt: -1 });
+
+    const totalUpvotes = images.reduce(
+      (sum, img) => sum + img.upvotes,
+      0
+    );
+
+    res.render("profile", {
+      profileUser: user,
+      images,
+      totalUpvotes
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).render("error");
+  }
 });
 
 // delete account

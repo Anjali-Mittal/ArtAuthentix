@@ -1,4 +1,22 @@
-/ML_Service
-/backend/node_modules
-/backend/src/views
-/backend/uploads
+.env
+
+# Node.js
+backend/node_modules/
+
+# Uploads (runtime data)
+backend/uploads/
+
+# Python
+ML_Service/__pycache__/
+ML_Service/.venv/
+ML_Service/*.pyc
+
+
+# ML model artifacts
+ML_Service/*.pt
+ML_Service/*.pth
+ML_Service/*.onnx
+# ======================
+.DS_Store
+Thumbs.db
+.vscode/

@@ -9,9 +9,19 @@ const authLimiter = rateLimit({
 
 // Upload limiter: moderate
 const uploadLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 20, // 20 uploads
-  message: "Too many uploads. Please slow down."
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10, // uploads per window PER USER
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    // 🔑 Rate-limit by logged-in user, fallback to IP
+    return req.session?.userId || req.ip;
+  },
+  handler: (req, res) => {
+    return res.render("painting", {
+      error: "Upload limit reached. Please try again later."
+    });
+  }
 });
 
 module.exports = {

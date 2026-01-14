@@ -18,6 +18,16 @@ const imageSchema = new Schema({
       confidence: { type: Number, required: true } // 0.62
     }
   ],
+  upvotes: {
+    type: Number,
+    default: 0
+  },
+  upvotedBy: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    }
+  ],
   // when it was uploaded
   createdAt: {
     type: Date,

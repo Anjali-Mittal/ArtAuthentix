@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include("./partials/head") %>
+  <title><%= profileUser.fullName %></title>
+</head>
+<body>
+
+<%- include("./partials/nav") %>
+
+<div class="container mt-4">
+
+  <!-- PROFILE HEADER -->
+  <div class="mb-4">
+    <h2><%= profileUser.fullName %></h2>
+    <p class="text-muted">
+      Joined <%= profileUser.createdAt.toLocaleDateString() %>
+    </p>
+    <p>
+      <strong><%= images.length %></strong> paintings ·
+      <strong><%= totalUpvotes %></strong> upvotes
+    </p>
+  </div>
+
+  <% if (images.length === 0) { %>
+    <div class="alert alert-info">
+      No paintings uploaded yet.
+    </div>
+  <% } else { %>
+
+  <div class="row">
+    <% images.forEach(img => { %>
+      <div class="col-md-4 mb-4">
+        <div class="card painting-card h-100">
+
+          <img
+            src="/uploads/<%= img.imagePath %>"
+            class="card-img-top"
+          />
+
+          <div class="card-body d-flex flex-column">
+
+            <small class="text-muted mb-2">
+              Uploaded <%= img.createdAt.toLocaleDateString() %>
+            </small>
+
+            <div class="mt-auto d-flex justify-content-between">
+
+              <a
+                href="/painting/<%= img._id %>/results"
+                class="btn btn-sm btn-outline-primary"
+              >
+                View
+              </a>
+
+              <% if (user && user._id.toString() === profileUser._id.toString()) { %>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  onclick="deletePainting('<%= img._id %>')"
+                >
+                  Delete
+                </button>
+              <% } %>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <% } %>
+
+</div>
+
+<%- include("./partials/scripts") %>
+
+<script>
+async function deletePainting(id) {
+  if (!confirm("Delete this painting?")) return;
+  const res = await fetch(`/painting/${id}`, { method: "DELETE" });
+  if (res.ok) location.reload();
+}
+</script>
+
+</body>
+</html>

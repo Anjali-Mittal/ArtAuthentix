@@ -4,6 +4,7 @@ const mongoose= require('mongoose');
 const Painting = require('./models/image');
 const session = require('express-session');
 const {MongoStore} = require("connect-mongo");
+const rateLimit = require("express-rate-limit");
 const express = require('express');
 const path = require('path');
 const PORT = process.env.PORT || 8080;
@@ -42,14 +43,20 @@ app.use(async (req, res, next) => {
 app.set('view engine', 'ejs');
 app.set('views',path.resolve('./src/views'));
 app.use(express.urlencoded({extended:false}));
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200
+});
+app.use(globalLimiter);
 const Image = require("./models/image"); 
 app.get("/", async (req, res) => {
   const images = await Image.find()
-    .sort({ createdAt: -1 })
-    .limit(10);
-
+  .populate("userId", "fullName")
+  .sort({ upvotes: -1, createdAt: -1 })
+  .limit(20);
   res.render("home", {
-    images
+    images,
+    currentUser: req.session.userId
   });
 });
 
@@ -60,6 +67,14 @@ const userRoutes = require("./routes/user");
 const paintingRoutes = require("./routes/painting");
 app.use("/user", userRoutes);
 app.use("/painting", paintingRoutes);
+app.use(async (req, res, next) => {
+  if (req.session.userId) {
+    res.locals.user = await User.findById(req.session.userId);
+  } else {
+    res.locals.user = null;
+  }
+  next();
+});
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 

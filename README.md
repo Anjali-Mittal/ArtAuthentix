@@ -1,7 +1,6 @@
 # 🎨 ArtAuthentix
 
 ArtAuthentix is a full-stack web application that analyzes uploaded artworks using machine learning to determine whether an image is a painting and, if so, predict its most likely art periods with confidence scores.
-
 The platform combines **authentication**, **media handling**, **ML inference**, and **social interaction features** into a cohesive system.
 
 ---
@@ -50,9 +49,6 @@ ML service is decoupled from the main backend and accessed via HTTP.
 - Accessible via:
 /painting/:id/results
 
-yaml
-Copy code
-
 ---
 
 ### 🏠 Homepage Gallery
@@ -72,18 +68,18 @@ Copy code
 - Users can upvote each painting **only once**
 - Vote persistence stored in database
 - UI feedback:
-- Button remains green if upvoted
-- Clicking again softly toggles state
-- Prevents duplicate upvotes at backend level
+  - Button remains green if upvoted
+  - Clicking again softly toggles state
+  - Prevents duplicate upvotes at backend level
 
 ---
 
 ### 🗑️ Secure Deletion
 - Only the owner of a painting can delete it
 - Deletion removes:
-- Database record
-- Physical image file from `/uploads`
-- Uses RESTful `DELETE` requests (no method override hacks)
+  - Database record
+  - Physical image file from `/uploads`
+  - Uses RESTful `DELETE` requests (no method override hacks)
 
 ---
 
@@ -97,11 +93,11 @@ Copy code
 ### 🧩 Error Handling & UX Safeguards
 - Graceful error messages (no raw stack traces)
 - Clean empty states:
-- No paintings → user prompt
+  - No paintings → user prompt
 - Safe fallback rendering:
-- Missing user info
-- Deleted users
-- Defensive checks to avoid app crashes
+  - Missing user info
+  - Deleted users
+  - Defensive checks to avoid app crashes
 
 ---
 
@@ -184,8 +180,6 @@ ArtAuthentix demonstrates:
 - Secure media handling
 - Clean UX for AI-powered features
 - Practical backend engineering patterns
-
-This is not just a demo — it’s an end-to-end application.
 
 ---
 

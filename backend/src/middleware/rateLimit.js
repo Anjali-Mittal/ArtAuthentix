@@ -1,30 +1,28 @@
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 
-//Auth Limiter
+// Auth limiter (login/signup)
 const authLimiter = rateLimit({
-    window: 15*60*1000,
-    max: 10,
-    message: "Too many attempts. Please try again after 15 minutes"
-});
-
-// Upload limiter: moderate
-const uploadLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10, // uploads per window PER USER
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: "Too many attempts. Please try again after 15 minutes.",
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    // 🔑 Rate-limit by logged-in user, fallback to IP
-    return req.session?.userId || req.ip;
-  },
+});
+
+// Upload limiter
+const uploadLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
   handler: (req, res) => {
     return res.render("painting", {
-      error: "Upload limit reached. Please try again later."
+      error: "Upload limit reached. Please try again later.",
     });
-  }
+  },
 });
 
 module.exports = {
   authLimiter,
-  uploadLimiter
+  uploadLimiter,
 };

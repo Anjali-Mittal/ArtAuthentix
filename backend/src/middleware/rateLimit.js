@@ -4,9 +4,19 @@ const rateLimit = require("express-rate-limit");
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10,
-  message: "Too many attempts. Please try again after 15 minutes.",
   standardHeaders: true,
   legacyHeaders: false,
+
+  keyGenerator: (req) => {
+    // Prefer email during login attempts
+    return req.body?.email || req.ip;
+  },
+
+  handler: (req, res) => {
+    return res.status(429).render("signin", {
+      error: "Too many login attempts. Please try again after 15 minutes."
+    });
+  }
 });
 
 // Upload limiter

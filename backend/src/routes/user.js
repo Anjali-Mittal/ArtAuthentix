@@ -47,6 +47,7 @@ router.post('/signin', authLimiter, async (req,res)=>{
     // create session
     req.session.userId = user._id;
     console.log('Sign in successful');
+    req.rateLimit?.resetKey?.(req.body.email);
     res.redirect('/');
   }catch (error) {
     console.error('Sign in error:', error.message);

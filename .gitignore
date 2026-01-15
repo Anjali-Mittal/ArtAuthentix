@@ -11,12 +11,12 @@ ML_Service/__pycache__/
 ML_Service/.venv/
 ML_Service/*.pyc
 
-
 # ML model artifacts
 ML_Service/*.pt
 ML_Service/*.pth
 ML_Service/*.onnx
-# ======================
+
+# =================
 .DS_Store
 Thumbs.db
 .vscode/

@@ -52,7 +52,7 @@ router.post("/upload",isAuth,uploadLimiter,
       );
 
       // ---- CALL ML SERVICE ----
-      const response = await fetch("http://127.0.0.1:8000/infer", {
+      const response = await fetch(`${process.env.ML_SERVICE_URL}/infer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image_path: imagePath })

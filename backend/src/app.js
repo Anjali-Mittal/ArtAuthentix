@@ -6,10 +6,10 @@ const session = require('express-session');
 const {MongoStore} = require("connect-mongo");
 const rateLimit = require("express-rate-limit");
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const PORT = process.env.PORT || 8080;
 const app = express();
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
@@ -29,7 +29,11 @@ app.use(session({
   }
 }));
 
-
+const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+app.use("/uploads",express.static(path.join(__dirname, "..", "uploads")));
 const User = require("./models/user");
 app.use(async (req, res, next) => {
   if (req.session.userId) {

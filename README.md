@@ -1,6 +1,7 @@
-# 🎨 ArtAuthentix
+# ArtAuthentix
 
 ArtAuthentix is a full-stack web application that analyzes uploaded artworks using machine learning to determine whether an image is a painting and, if so, predict its most likely art periods with confidence scores.
+
 The platform combines **authentication**, **media handling**, **ML inference**, and **social interaction features** into a cohesive system.
 
 ---
@@ -29,7 +30,6 @@ The platform combines **authentication**, **media handling**, **ML inference**, 
 
 ### 🧠 Machine Learning Inference (Microservice)
 A dedicated **FastAPI ML service** performs inference:
-
 1. **Painting Detection**
    - Binary classifier checks if the image is a painting
 2. **Art Period Classification**
@@ -47,24 +47,26 @@ ML service is decoupled from the main backend and accessed via HTTP.
   - Top predicted art periods
   - Confidence bars (percentage-based progress bars)
 - Accessible via:
-/painting/:id/results
+  ```bash
+    /painting/:id/results
+    ```
 
 ---
 
-### 🏠 Homepage Gallery
+### 🖼 Homepage Gallery
 - Responsive card-based grid layout
 - Displays **Top paintings** instead of latest uploads
 - Each card shows:
-- Painting preview
-- Uploader name
-- Upload date
-- Upvote count
-- View Results button
+  - Painting preview
+  - Uploader name
+  - Upload date
+  - Upvote count
+  - View Results button
 - Smooth hover animations for better UX
 
 ---
 
-### 👍 Upvotes System
+### 🔼 Upvotes System
 - Users can upvote each painting **only once**
 - Vote persistence stored in database
 - UI feedback:
@@ -74,24 +76,23 @@ ML service is decoupled from the main backend and accessed via HTTP.
 
 ---
 
-### 🗑️ Secure Deletion
-- Only the owner of a painting can delete it
+### 🗑 Secure Deletion
+- Only the owner can delete the painting
 - Deletion removes:
   - Database record
   - Physical image file from `/uploads`
-  - Uses RESTful `DELETE` requests (no method override hacks)
 
 ---
 
-### ⚡ Rate Limiting
+### ⏸ Rate Limiting
 - Upload requests are rate-limited
 - Limits applied per authenticated user
 - Prevents abuse and server overload
 
 ---
 
-### 🧩 Error Handling & UX Safeguards
-- Graceful error messages (no raw stack traces)
+### 🚨 Error Handling & UX Safeguards
+- Graceful error messages
 - Clean empty states:
   - No paintings → user prompt
 - Safe fallback rendering:
@@ -123,7 +124,7 @@ ML service is decoupled from the main backend and accessed via HTTP.
 
 ---
 
-## 📂 Project Structure (Simplified)
+## 📂 Project Structure
 ```bash
 ArtAuthentix/
 ├── backend/
@@ -142,8 +143,63 @@ ArtAuthentix/
 │ ├── models/
 │ └── requirements.txt
 ```
+## 🌐 Application Routes
+
+### 👥 User Routes (`/user`)
+
+| Method | Route    | Description            |
+|------|------------|------------------------|
+| GET  | /signin    | Login page             |
+| POST | /signin    | Authenticate user      |
+| GET  | /signup    | Signup page            |
+| POST | /signup    | Register user          |
+| POST | /logout    | Logout user            |
+| DELETE | /:id     | Delete user account    |
 
 ---
+
+### 🖼 Painting Routes (`/painting`)
+
+| Method | Route               | Description                          |
+|--------|---------------------|--------------------------------------|
+| GET    | /upload             | Upload form                          |
+| POST   | /upload             | Upload & analyze painting            |
+| GET    | /:id/results        | View analysis results                |
+| POST   | /:id/upvote         | Upvote a painting                    |
+| DELETE | /:id                | Delete painting (owner only)         |
+
+---
+
+### Homepage (`/`)
+
+| Method | Route | Description                 |
+|------  |-------|-----------------------------|
+| GET    | /     | View community paintings    |
+
+---
+
+## ML Service API
+
+### POST `/infer`
+
+**Request**
+```json
+{
+  "image_path": "absolute/path/to/image.jpg"
+}
+```
+Response
+
+```json
+Copy code
+{
+  "isPainting": true,
+  "predictions": [
+    { "era": "expressionism", "confidence": 0.88 },
+    { "era": "surrealism", "confidence": 0.08 }
+  ]
+}
+```
 
 ## 🚀 How It Works (High Level Flow)
 
@@ -162,9 +218,48 @@ ArtAuthentix/
    - Error shown to user
 
 ---
+## ▶️ Running the Project Locally
 
-## 🔮 Planned Enhancements
-- User profiles with personal galleries
+### 1️⃣ Start MongoDB
+
+Make sure MongoDB is running locally on your system.
+
+---
+
+### 2️⃣ Start Backend (Node.js)
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+Server runs at:
+```bash
+http://localhost:7000
+```
+3️⃣ Start ML Service (Python)
+```bash
+cd ML_Service
+pip install -r requirements.txt
+uvicorn app:app --host 127.0.0.1 --port 8000
+```
+ML API runs at:
+```bash
+http://127.0.0.1:8000
+```
+
+---
+## 🚫 Ignored Files (Important)
+### The following files and directories are intentionally excluded from version control:
+
+- .env
+- node_modules/
+- backend/uploads/ (uploaded images)
+- Python virtual environments (venv/, .venv/)
+- ML model weights (.pt, .pth, .onnx)
+
+---
+## Future Enhancements
 - Search / filter by art period
 - Soft private/public painting visibility
 - Comments & discussions on paintings
@@ -183,6 +278,7 @@ ArtAuthentix demonstrates:
 
 ---
 
-## 🧑‍💻 Author
-**Anjali Mittal**  
+## 🧾 License
 Built with care, curiosity, and a lot of debugging.
+### MIT License © 2026 Anjali Mittal  
+Made with ❤️ by [Anjali Mittal](https://github.com/Anjali-Mittal)

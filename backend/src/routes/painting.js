@@ -1,5 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
+const fetch = require("node-fetch");
+const FormData = require("form-data");
 const router = express.Router();
 const isAuth = require("../middleware/authentication");
 const { uploadLimiter } = require("../middleware/rateLimit");
@@ -28,71 +31,68 @@ router.post("/upload",isAuth,uploadLimiter,
   (req, res, next) => {
     upload.single("image")(req, res, err => {
       if (err) {
-        return res.render("painting", {
-          error: err.message
-        });
+        return res.render("painting", { error: err.message });
       }
       next();
     });
   },
-
   async (req, res) => {
+    let imagePath;
     try {
       if (!req.file) {
-        return res.render("painting", {
-          error: "Please upload a valid image file"
+          return res.render("painting", {
+          error: "Please upload a valid image file",
         });
       }
 
-      // Absolute path to uploaded image
-      const imagePath = path.join(
-        process.cwd(), // backend/
-        "uploads",
-        req.file.filename
+      imagePath = path.join(process.cwd(), "uploads", req.file.filename);
+
+      // CREATING MULTIPART FORM
+      const form = new FormData();
+      form.append(
+        "file",
+        fs.createReadStream(imagePath),
+        req.file.originalname
       );
 
-      // ---- CALL ML SERVICE ----
+      // CALL ML SERVICE
       const response = await fetch(`${process.env.ML_SERVICE_URL}/infer`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image_path: imagePath })
+        body: form,
+        headers: form.getHeaders(),
       });
 
       const result = await response.json();
 
       // ---- NOT A PAINTING ----
       if (!result.isPainting) {
-        safeUnlink(imagePath); // remove rejected file
+        safeUnlink(imagePath);
         return res.render("painting", {
-          error: "Uploaded image is not a painting"
+          error: "Uploaded image is not a painting",
         });
       }
+
       // ---- SAVE TO DB ----
       const image = new Image({
         userId: req.session.userId,
         imagePath: req.file.filename,
-        predictions: result.predictions
+        predictions: result.predictions,
       });
-      await image.save();
-      res.redirect(`/painting/${image._id}/results`);
 
+      await image.save();
+
+      res.redirect(`/painting/${image._id}/results`);
     } catch (err) {
       console.error(err);
-      // cleanup on crash
-      if (req.file) {
-        const imagePath = path.join(
-          process.cwd(),
-          "uploads",
-          req.file.filename
-        );
-        fs.existsSync(imagePath) && safeUnlink(imagePath);
+
+      if (imagePath && fs.existsSync(imagePath)) {
+        safeUnlink(imagePath);
       }
       res.render("painting", {
-        error: "Something went wrong while processing the image"
+        error: "Something went wrong while processing the image",
       });
     }
-  }
-);
+});
 
 
 router.get("/:id/results",isAuth,

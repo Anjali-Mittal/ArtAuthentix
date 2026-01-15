@@ -1,4 +1,6 @@
 .env
+.env.*
+backend/.env
 
 # Node.js
 backend/node_modules/

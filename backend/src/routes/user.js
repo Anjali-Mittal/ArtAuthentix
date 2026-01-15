@@ -5,11 +5,11 @@ const User = require('../models/user');
 const Image = require("../models/image");
 
 router.get('/signup',(req,res)=>{
-    return res.render('signUp', {error: null})
+    return res.render('signup', {error: null})
 });
 
 router.get('/signin',(req,res)=>{
-    return res.render('signIn', {error: null})
+    return res.render('signin', {error: null})
 });
 
 router.post("/signup", authLimiter, async (req, res) => {

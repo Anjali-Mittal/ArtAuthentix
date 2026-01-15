@@ -25,20 +25,31 @@ ERA_CLASSES = [
     "renaissance", "romanticism", "surrealism", "ukiyo_e",
 ]
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cpu"
 
-# ---------------- LOAD MODELS (ONCE) ----------------
+# ---------------- LAZY MODEL LOADERS ----------------
 
-painting_model = tf.keras.models.load_model(PAINTING_MODEL_PATH)
+_painting_model = None
+_style_model = None
 
-style_model = models.efficientnet_b3(weights=None)
-num_features = style_model.classifier[1].in_features
-style_model.classifier[1] = nn.Linear(num_features, len(ERA_CLASSES))
+def get_painting_model():
+    global _painting_model
+    if _painting_model is None:
+        _painting_model = tf.keras.models.load_model(PAINTING_MODEL_PATH)
+    return _painting_model
 
-state_dict = torch.load(STYLE_MODEL_PATH, map_location=DEVICE)
-style_model.load_state_dict(state_dict)
-style_model = style_model.to(DEVICE)
-style_model.eval()
+def get_style_model():
+    global _style_model
+    if _style_model is None:
+        model = models.efficientnet_b3(weights=None)
+        num_features = model.classifier[1].in_features
+        model.classifier[1] = nn.Linear(num_features, len(ERA_CLASSES))
+
+        state_dict = torch.load(STYLE_MODEL_PATH, map_location="cpu")
+        model.load_state_dict(state_dict)
+        model.eval()
+        _style_model = model
+    return _style_model
 
 # ---------------- PREPROCESSING ----------------
 
@@ -67,7 +78,9 @@ def predict(image_path: str):
 
     # --- Painting detector ---
     x_paint = preprocess_for_painting(image_path)
+    painting_model = get_painting_model()
     pred = painting_model.predict(x_paint, verbose=0)[0][0]
+
 
     is_painting = pred <= 0.7
     print(f"Painting Detector Confidence: {pred:.4f} -> isPainting: {is_painting}")
@@ -77,12 +90,12 @@ def predict(image_path: str):
     # --- Style classifier ---
     x_style = preprocess_for_style(image_path)
 
+    style_model = get_style_model()
     with torch.no_grad():
         logits = style_model(x_style)
         probs = F.softmax(logits, dim=1)[0].cpu().numpy()
-
+  
     top_indices = probs.argsort()[-2:][::-1]
-
     predictions = [
         {
             "era": ERA_CLASSES[i],

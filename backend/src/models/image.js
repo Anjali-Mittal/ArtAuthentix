@@ -7,10 +7,12 @@ const imageSchema = new Schema({
     ref: "User",
     required: true
   },
-  // stored file path (e.g. uploads/painting_1.jpg)
-  imagePath: {
-    type: String,
-    required: true
+  imageUrl: {
+  type: String,
+  required: true,
+  },
+  publicId: {
+  type: String,
   },
   predictions: [
     {
@@ -34,5 +36,6 @@ const imageSchema = new Schema({
     default: Date.now
   }
 });
+
 const Image = model("Image", imageSchema);
 module.exports = Image;

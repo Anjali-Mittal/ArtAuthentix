@@ -1,25 +1,12 @@
 require("dotenv").config();
 const express = require("express");
-const fs = require("fs");
 const fetch = require("node-fetch");
-const FormData = require("form-data");
 const router = express.Router();
 const isAuth = require("../middleware/authentication");
 const { uploadLimiter } = require("../middleware/rateLimit");
-const upload = require("../middleware/fileValidation");
+const cloudinary = require("../config/cloudinary");
+const upload = require("../config/multer");
 const Image = require("../models/image");
-const path = require("path");
-
-function safeUnlink(filePath) {
-  try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch (err) {
-    console.error("Failed to delete file:", filePath, err.message);
-  }
-}
-
 
 router.get("/upload", isAuth, (req, res) => {
   res.render("painting", {
@@ -27,67 +14,61 @@ router.get("/upload", isAuth, (req, res) => {
   });
 });
 
-router.post("/upload",isAuth,uploadLimiter,
-  (req, res, next) => {
-    upload.single("image")(req, res, err => {
-      if (err) {
-        return res.render("painting", { error: err.message });
-      }
-      next();
-    });
-  },
+router.post("/upload", isAuth, uploadLimiter,
+  upload.single("image"),
   async (req, res) => {
-    let imagePath;
     try {
       if (!req.file) {
-          return res.render("painting", {
+        return res.render("painting", {
           error: "Please upload a valid image file",
         });
       }
 
-      imagePath = path.join(process.cwd(), "uploads", req.file.filename);
+      // Uploading to Cloudinary
+      const cloudRes = await cloudinary.uploader.upload_stream(
+        { folder: "artauthentix" },
+        async (err, result) => {
+          if (err) {
+            console.error(err);
+            return res.render("painting", {
+              error: "Image upload failed",
+            });
+          }
 
-      // CREATING MULTIPART FORM
-      const form = new FormData();
-      form.append(
-        "file",
-        fs.createReadStream(imagePath),
-        req.file.originalname
+          const imageUrl = result.secure_url;
+
+          // Sending URL to ML service
+          const response = await fetch(
+            `${process.env.ML_SERVICE_URL}/infer`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ image_url: imageUrl }),
+            }
+          );
+          const mlResult = await response.json();
+          if (!mlResult.isPainting) {
+            return res.render("painting", {
+              error: "Uploaded image is not a painting",
+            });
+          }
+
+          // 3Save to DB
+          const image = new Image({
+            userId: req.session.userId,
+            imageUrl: imageUrl, // URL now
+            publicId: result.public_id,
+            predictions: mlResult.predictions,
+          });
+
+          await image.save();
+          res.redirect(`/painting/${image._id}/results`);
+        }
       );
 
-      // CALL ML SERVICE
-      const response = await fetch(`${process.env.ML_SERVICE_URL}/infer`, {
-        method: "POST",
-        body: form,
-        headers: form.getHeaders(),
-      });
-
-      const result = await response.json();
-
-      // ---- NOT A PAINTING ----
-      if (!result.isPainting) {
-        safeUnlink(imagePath);
-        return res.render("painting", {
-          error: "Uploaded image is not a painting",
-        });
-      }
-
-      // ---- SAVE TO DB ----
-      const image = new Image({
-        userId: req.session.userId,
-        imagePath: req.file.filename,
-        predictions: result.predictions,
-      });
-
-      await image.save();
-
-      res.redirect(`/painting/${image._id}/results`);
+      cloudRes.end(req.file.buffer); // push buffer
     } catch (err) {
       console.error(err);
-
-      if (imagePath && fs.existsSync(imagePath)) {
-        safeUnlink(imagePath);
-      }
       res.render("painting", {
         error: "Something went wrong while processing the image",
       });
@@ -154,19 +135,26 @@ router.post("/:id/upvote", isAuth, async (req, res) => {
 
 
 router.delete("/:id", isAuth, async (req, res) => {
-  const painting = await Image.findById(req.params.id);
-  if (!painting) return res.status(404).json({ error: "Not found" });
+  try {
+    const painting = await Image.findById(req.params.id);
+    if (!painting) {
+      return res.status(404).json({ error: "Painting not found" });
+    }
+    if (painting.userId.toString() !== req.session.userId.toString()) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
 
-  if (painting.userId.toString() !== req.session.userId.toString()) {
-    return res.status(403).json({ error: "Unauthorized" });
+    // DELETE FROM CLOUDINARY
+    await cloudinary.uploader.destroy(painting.publicId);
+
+    // DELETE FROM DB
+    await painting.deleteOne();
+
+    return res.json({ message: "Painting deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Deletion failed" });
   }
-
-  const imgPath = path.join(process.cwd(), "uploads", painting.imagePath);
-  if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
-
-  await painting.deleteOne();
-
-  res.json({ message: "Painting deleted successfully" });
 });
 
 module.exports = router;

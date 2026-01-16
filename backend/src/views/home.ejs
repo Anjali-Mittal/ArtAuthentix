@@ -51,7 +51,7 @@
             <div class="col-md-4 mb-4">
               <div class="card painting-card h-100">
                 <!-- IMAGE -->
-                <img src="/uploads/<%= img.imagePath %>" class="card-img-top"
+                <img src="<%= img.imageUrl %>" class="card-img-top"
                 alt="Painting"
                 />
                 <!-- BODY -->
@@ -74,10 +74,13 @@
 
                     <!-- UPVOTE -->
                   <% if (user) { %>
-                    <button class="btn btn-sm <%= img.upvotedBy.includes(user._id) ? 'btn-success' : 'btn-outline-success' %>"
-                    onclick="toggleUpvote('<%= img._id %>', this)">
-                    ▲ <span><%= img.upvotes %></span>
+                    <button
+                        type="button"
+                        class="btn btn-sm <%= img.upvotedBy.map(id => id.toString()).includes(user._id.toString())
+                        ? 'btn-success': 'btn-outline-success' %>"
+                        onclick="toggleUpvote('<%= img._id %>', this)">▲ <span><%= img.upvotes %></span>
                     </button>
+
                     <% } %>
 
                     <!-- VIEW -->

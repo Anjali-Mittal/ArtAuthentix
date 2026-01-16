@@ -127,17 +127,17 @@ The system is fully cloud-hosted and stateless.
 
 ## 🧠 ML Service API
 
-POST /infer
+POST `/infer`
 
+```json
 Request:
-```bash
 {
   "image_url": "https://res.cloudinary.com/.../image.jpg"
 }
 ```
 
+```json
 Response:
-```bash
 {
   "isPainting": true,
   "predictions": [
@@ -158,6 +158,7 @@ Response:
 ---
 
 ## 🧾 License
-MIT License © 2026 Anjali Mittal
+Built with care, curiosity, and a lot of debugging.
+### MIT License © 2026 Anjali Mittal
 
-Built with persistence, curiosity, and a lot of debugging ❤️ by [Anjali Mittal](https://github.com/Anjali-Mittal)
+Made with ❤️ by [Anjali Mittal](https://github.com/Anjali-Mittal)

@@ -54,7 +54,7 @@ The ML service is accessed via HTTPS and operates independently of the backend.
   - Confidence bars
 - Route:
 ```bash
-  /painting/:id/results
+/painting/:id/results
 ```
 ---
 
@@ -127,13 +127,16 @@ The system is fully cloud-hosted and stateless.
 
 ## 🧠 ML Service API
 
-POST /infer
+POST `/infer`
 
+```json
 Request:
 {
   "image_url": "https://res.cloudinary.com/.../image.jpg"
 }
+```
 
+```json
 Response:
 {
   "isPainting": true,
@@ -142,6 +145,7 @@ Response:
     { "era": "surrealism", "confidence": 0.08 }
   ]
 }
+```
 
 ---
 
@@ -154,5 +158,7 @@ Response:
 ---
 
 ## 🧾 License
-MIT License © 2026 Anjali Mittal
-Built with persistence, curiosity, and a lot of debugging ❤️ by [Anjali Mittal](https://github.com/Anjali-Mittal)
+Built with care, curiosity, and a lot of debugging.
+### MIT License © 2026 Anjali Mittal
+
+Made with ❤️ by [Anjali Mittal](https://github.com/Anjali-Mittal)
